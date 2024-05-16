@@ -47,5 +47,4 @@ Pour vérifier notre nombre d'utilisateurs, nous utilisons la commande `(Get-AdU
 </p>
 
 
-Toutes nos informations sont bien vérifiés et notre infrastructure est fonctionnelle ! 
-
+Toutes nos informations sont bien vérifiés et notre infrastructure est fonctionnel ! 
