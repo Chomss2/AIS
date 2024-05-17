@@ -15,7 +15,7 @@
     Ma passerelle est en 192.168.0.1
 ## 2️⃣ Questions
 
-### 1️⃣ Quels sont les flags TCP
+### 0️⃣ Quels sont les flags TCP
 
 * Les flags sont des bit contenus dans l'entête qui donnent une information sur la nature du paquet
 
@@ -26,13 +26,61 @@
 * SYN indique la synchronisation des numéros de séquence.
 * FIN indique fin de transmission.
 
-### 2️⃣ Capturer le processus DORA du DHCP
+### 1️⃣ Capturer le processus DORA du DHCP
 
 ![alt text](DORA_DHCP.png "Capture DORA")
 
-### 3️⃣ DHCP Starvation / DHCP snooping / Rogue DHCP 
+### 2️⃣ DHCP Starvation / DHCP snooping / Rogue DHCP 
 
 * Une attaque DHCP Starvation est une attaque de type DoS qui vise a flooder le serveur DHCP de requêtes pour qu'il ai attribué toutes ses adresse disponible, et ainsi bloquer son fonctionnement
 * Le DHCP Snooping est une fonctionnalité de couche 2 qui va bloquer les Offres DHCP venant d'une source suspecte et triant ses ports
 * Un Rogue DHCP est un serveur DHCP qui n'a pas été installé par l'équipe infrastructure, par des raisons d'innatentions ou de malveillance
 
+### 3️⃣ Que se passe t-il quand on fait un ipconfig /release, et en sécurité?
+
+Lors d'un ipconfig /release, on désactive l'interface réseau sur laquelle on est connecté, coupant le traffic qui y passe.
+En sécurite, on s'isole du réseau, reduisant les risque d'attaque. Attention, on est quand même branché physiquement au réseau, ce n'est pas sans faille
+
+### 4️⃣ Quelle fonctionnalité CISCO pour prémunir les attaques DHCP
+
+Le DHCP Snooping
+
+### 5️⃣ Capturer une requette DNS et sa réponse
+
+![alt text](DNS_GOOGLE.png "Capture DNS")
+
+### 6️⃣ DNS Spoofing, comment s'en protéger ?
+
+Le DNS Spoofing est une attaque consistant a se faire passer pour le service DNS dans un réseau, elle permet en suite de faire naviguer un utilisateur sur un site malveillant en changeant la résolution DNS.  
+Pour s'en protéger, il est essentiel de vérifier les  domaines sur lesquels ont navigue, ainsi que de ne se connecter qu'a des réseaux en lesquels on a confiance 
+
+
+### 7️⃣ DNS sec / DNS over TLS / HTTPS 
+
+* Le DNS sec, Domain Name System Security Extensions, est un moyen de sécuriser les serveurs DNS avec une signature cryptographique
+
+* Le DNS over TLS et HTTPS, comme leurs noms l'indiquent, sont des moyens de sécuriser des echanges DNS en les chiffrant, empêchant ainsi un tierce de les lires et/ou les alterer
+
+### 8️⃣ Dans quels cas trouvent t-on du DNS sous TCP
+
+Le DNS passe sous TCP quand sa taille dépasse les 512 bytes, ceci peut arriver du aux nouvelles fonctionnalités du DNS, ou a la taille des clés cryptographiques qui le sécurisent, comme le DNSSEC
+
+### 9️⃣ Capturer un flux HTTP
+
+![alt text](HTTP_WEB.png "Capture HTTP") 
+
+### 🔟 HTTP Smuggling et sa CVE
+
+Le HTTP Smuggling est l'acte d'injecter du code HTTP dans un paquet HTTP, permettant de le faire lire un paquet contenant du code malveillant, cette technique a nottament été utilisé pour partager la vulnerabilité CVE-2005-2088 qui permettais une attaque de HTTP Smuggling qui corrompais le Cache WEB et outrepassait les Pare-Feu des navigateurs
+
+### 1️⃣1️⃣ Confidentialité et Authenticité HTTP
+
+Le meilleur moyen de sécuriser HTTP est de le chiffrer, si possible asymetriquement, et donc le faire passer en HTTPS, solution utilisant TLS
+
+### 1️⃣2️⃣ Qu'est-ce qu'une PKI ?
+
+Une PKI est une infrastructure de sécurisation de l'intégrité de certificats numériques, et ainsi de certifier la légitimité des personnes, organisations, et services. Elle est constituée de beaucoup d'autres éléments, le plus important étant l'Autorité de Certification, qui délivrera les fameux "Certificats"
+
+### 1️⃣3️⃣ Capturer un mot de passe avec Wireshark
+
+![alt text](HTTP_CREDENTIALS.png "Capture Credentials")
