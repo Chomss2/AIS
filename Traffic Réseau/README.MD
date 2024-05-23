@@ -111,3 +111,24 @@ On peut constater que notre certificat est signé par Let's Encrypt, qui fournis
 
 ### 1️⃣9️⃣ Capturer une authentification Kerberos
 
+Notre échange lors d'une authentification Kerberos se compose de
+![alt text](KRB5_ECHANGE.png "Capture Echange Kerberos")
+
+Voici un exemple avec le contenu de notre réponse
+
+![alt text](DATA_KRB.png "Capture DATA Kerberos")
+
+### 2️⃣0️⃣ Capturer une authentification RDP
+
+![alt text](RDP_ECHANGE.png "Capture Echange RDP")
+
+### 2️⃣1️⃣ Quelles sont les attaques connues sur NetLM ?
+
+Les attaques connues sur NetLM sont des attaques de types Man In The Middle, intercéptant le traffic entre deux clients, le problème viens du fait que NetLM n'es pas crypté, et peut donc être intercépté en clair
+Le NetLM pose aussi soucis car il fait des requètes DNS en clair, ce qui permettrais donc a un intrus de se faire passer pour l'hote NetLM
+
+### 2️⃣2️⃣ Capturer une authentification WinRM
+
+
+
+/swagger/index.html
