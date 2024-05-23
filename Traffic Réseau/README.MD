@@ -75,7 +75,7 @@ Le HTTP Smuggling est l'acte d'injecter du code HTTP dans un paquet HTTP, permet
 
 ### 1️⃣1️⃣ Confidentialité et Authenticité HTTP
 
-Le meilleur moyen de sécuriser HTTP est de le chiffrer, si possible asymetriquement, et donc le faire passer en HTTPS, solution utilisant TLS
+Le meilleur moyen de sécuriser HTTP est de le chiffrer, si possible asymetriquement, et donc le faire passer en HTTPS, solution utilisant TLS. Pour son authenticité, nous pouvons vérifier le domaine auquel nous somme connectés
 
 ### 1️⃣2️⃣ Qu'est-ce qu'une PKI ?
 
@@ -84,3 +84,30 @@ Une PKI est une infrastructure de sécurisation de l'intégrité de certificats 
 ### 1️⃣3️⃣ Capturer un mot de passe avec Wireshark
 
 ![alt text](HTTP_CREDENTIALS.png "Capture Credentials")
+
+### 1️⃣4️⃣ Comment mettre en place la confidentialité pour ce service ? 
+
+Pour mettre en place de la confidentialité pour ce service, il faudrait chiffrer nos échanges de bout en bout, ceci via un certificat TLS, donc par du HTTPS
+
+### 1️⃣5️⃣ Capturer un paquet TLS
+
+![alt text](PAQUET_TLS.png "Capture Paquet TLS")
+
+### 1️⃣6️⃣ Déchiffrer le traffic TLS avec votre certificat
+
+![alt text](TLS_DECRYPT.png "Capture Paquet TLS dechiffré")
+
+### 1️⃣7️⃣ Autorité de certification racine et intermediaire
+
+Un certificat racine est un certificat qui identifie d'autres autorités de certifications (délégués) dans un modèle hierarchique (Une AC peut en autoriser une autre). Il est souvent contenu par défaut dans votre navigateur
+
+Le certificat intermediaire agit comme "proxy" du certificat racine, pour pouvoir signer des certificats clients sans utiliser la signature du certificat racine, qui reste caché derrière plusieurs couches de sécurité
+
+### 1️⃣8️⃣ Connectez-vous sur https://taisen.fr et affichez la chaine de confiance du certificat
+
+On peut constater que notre certificat est signé par Let's Encrypt, qui fournissent des certificats SSL/TLS gratuits, qui sont considérés comme de confiance par l'autorité de certification racine de mon navigateur (Ici, Firefox)
+
+![alt text](ID_CERT.png "Capture Firefox IF du certificat")
+
+### 1️⃣9️⃣ Capturer une authentification Kerberos
+
