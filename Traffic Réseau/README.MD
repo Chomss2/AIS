@@ -129,6 +129,21 @@ Le NetLM pose aussi soucis car il fait des requètes DNS en clair, ce qui permet
 
 ### 2️⃣2️⃣ Capturer une authentification WinRM
 
+![alt text](WINRM_ECHANGE.png "Capture Echange WinRM")
+
+### 2️⃣3️⃣ Capturer une authentification SSH ou SFTP
 
 
+![alt text](SSH_AUTH.png "Capture Authentification SSH")
+
+
+### 2️⃣4️⃣ Intercepter un fichier au travers du protocole SMB
+
+
+![alt text](SMB_FILE.png "Capture de la capture du fichier SMB")
+
+### 2️⃣5️⃣ Comment proteger l'authenticité et la confidentialité d'un partage SMB ?
+
+
+Supprimer SMB 1 pour ne passer que sous SMB 2, et si possible, supprimer SMB 2 pour ne passer que sous SMB 3, qui est chiffré, utilise de la signature, et utilise de l'intégrité de pré-authentification
 /swagger/index.html
