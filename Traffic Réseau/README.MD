@@ -146,4 +146,12 @@ Le NetLM pose aussi soucis car il fait des requètes DNS en clair, ce qui permet
 
 
 Supprimer SMB 1 pour ne passer que sous SMB 2, et si possible, supprimer SMB 2 pour ne passer que sous SMB 3, qui est chiffré, utilise de la signature, et utilise de l'intégrité de pré-authentification
-/swagger/index.html
+
+#
+
+## FIN DU TP
+
+PS : Les questions bonus sont ici les questions 16 et 25
+
+Merci pour votre lecture
+
