@@ -1,0 +1,2 @@
+x = "spaladouuu !"
+print(x)
