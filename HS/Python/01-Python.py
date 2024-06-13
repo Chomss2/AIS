@@ -25,6 +25,7 @@ output = stream.read().strip()
 socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket.connect(("taisen.fr", 443))
 SourceDest = socket
+print(socket.close)
 socket.close()
 
 #Afficher les headers/leur utilité
@@ -45,8 +46,9 @@ dlchaine = SSLCertificateChainDownloader()
 dlchaine.run({'host': urlcert})
 chaine = dlchaine.run({'host': urlcert})
 #Liste des équipements 
+hostname = "taisen.fr"
 for i in range(1, 28):
-    pkt = IP(dst=url, ttl=i) / UDP(dport=33434)
+    pkt = IP(dst=hostname, ttl=i) / TCP(dport=33434)
     # Send the packet and get a reply
     reply = sr1(pkt, verbose=0)
     if reply is None:
