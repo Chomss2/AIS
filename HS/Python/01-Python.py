@@ -96,3 +96,13 @@ if __name__ == "__main__" :
     fCert()
     #Afficher les IP des équipements traversés 
     fTracerout()
+
+
+    ## Lécture du message de Slimane
+clé = b'p0^\x92\x1c\xc4\xb8\xde\xb1\xec\x0e\x11zh\xce\x15D\xee\x8d\xf9R\x08k \xd7\xe0\x0c\xb1\xf5\x03^\x04'
+iv = b'\xe0?\xaa\xf8q\x8c\xdbB\xf4>\xeb0\xa4\xc4f\xdb'
+msg = b'Wt\x83\xa8?W\x82\x12\xfd\x10\xd23V\xc8o\xfa'
+print (clé)
+print (iv)
+print (msg)
+print (dechiffre_message(clé,iv,msg))
