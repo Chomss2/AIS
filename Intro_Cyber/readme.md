@@ -39,3 +39,4 @@ En entrant notre script, nous pouvons executer des commandes système
 Et notre commandes (alert) est bien éxécutée
 ![Résultat XSS](xss_result.png)
 
+cd
