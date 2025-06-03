@@ -1,0 +1,203 @@
+# ────────────────────────────────────────────────────────────────
+# Définition des étapes (stages) du pipeline CI/CD
+stages:
+  - build           # 0. Étape de build : construction de l'image Docker
+  - test            # 1. Docker Compose et tests
+  - deploy_preprod  # 2. Déploiement en préproduction
+  - deploy_prod     # 3. Déploiement en production (branche main + déclenchement manuel)
+
+
+# ────────────────────────────────────────────────────────────────
+# Étape de build
+build:
+  stage: build
+  script:
+    # Affichage du message de début de build
+    - echo "→ Etape de build"
+    - echo "Registre cible = $CI_REGISTRY"
+    
+    # Ou suis je ?
+    - pwd
+    # Que contient le répertoire ?
+    - ls -la
+
+    # Build de l'image Docker à partir du Dockerfile et push vers le registre GitLab
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -f Dockerfile -t $CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID .
+    - docker push $CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID
+
+    # Affichage du message de succès avec l'ID du pipeline
+    - echo "📦 Image construite"
+
+  # Règle : ce job s'exécute sur les branches develop et main
+  rules:
+  - if: '$CI_COMMIT_BRANCH == "develop"'
+  - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ────────────────────────────────────────────────────────────────
+# 🧪 Étape de test
+test:
+  stage: test
+  environment:
+    name: test
+  script:
+    - echo "→ Etape de Test"
+
+    ###############################################################################################
+    # TEST 1 - Tests unitaires dans un conteneur dédié avec pytest
+    - echo "→ TEST 1 - Tests unitaires dans un conteneur dédié avec pytest"
+
+    # Construction de l'image depuis la racine du projet
+    - docker build -t pytest-runner -f tests/Dockerfile .
+
+    # Exécution du conteneur, suppression automatique après exécution
+    - docker run --rm pytest-runner
+
+    ###############################################################################################
+    # TEST 2 - Test de l'image Docker avec un conteneur isolé
+    - echo "→ TEST 1 - Test de l'image Docker"
+
+    # Suppression d'un éventuel conteneur existant pour éviter les conflits de nom
+    - docker rm -f container-de-test || true
+
+    # Démarrage du conteneur (pas besoin de publier les ports ici)
+    - docker run -d --name container-de-test $CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID
+
+    # Pause pour laisser le serveur Flask démarrer
+    - sleep 5
+
+    # Test interne : curl exécuté DANS le conteneur
+    - |
+      if docker exec container-de-test curl -sSf http://localhost:8080 > /dev/null; then
+        echo "✅ Test HTTP réussi dans le conteneur"
+      else
+        echo "❌ L'application ne répond pas dans le conteneur" >&2
+        exit 1
+      fi
+
+    # Nettoyage du conteneur de test après le test
+    - docker stop container-de-test
+    - docker rm container-de-test
+
+    ###############################################################################################
+    # TEST 3 - Test d'intégration avec Docker Compose
+    - echo "→ TEST 3 - Test d'intégration avec Docker Compose"
+
+    # Connexion au GitLab Container Registry
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    # Pull de l’image application si nécessaire (le fichier compose va le faire aussi)
+    - docker pull $CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID
+
+    # Définir le nom d'image utilisé dans le compose
+    - export APP_IMAGE="$CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID"
+    # Définir le nom de l'app pour l'environnement de test
+    - export APP_NAME="app_web_test"
+    # Définir le port pour l'environnement de test
+    - export APP_PORT="8888"
+    # Définir le nom de la base redis pour l'environnement de test
+    - export REDIS_NAME="redis_test"
+    # Définir le port redis pour l'environnement de test
+    - export REDIS_PORT="63790"
+
+    # Arrêt des conteneurs existants pour l’environnement courant
+    - docker compose --project-name ${APP_ENV} -f docker-compose.yml down || true
+
+    # Lancement de la stack isolée pour l’environnement courant
+    - docker compose --project-name ${APP_ENV} -f docker-compose.yml up -d
+
+    # Pause pour laisser le service démarrer
+    - sleep 5
+
+    # Test interne : curl exécuté DANS le conteneur après Docker Compose
+    - |
+      echo "🔍 Vérification du compteur de visites :"
+      if docker exec app_web_test curl -s http://localhost:8080 | grep -E "<strong>Visites :</strong> *[0-9]+"; then
+        echo "✅ Liaison avec Redis : OK "
+      else
+        echo "❌ Liaison avec Redis : NOK → problème potentiel avec Redis ou session Flask" >&2 
+        docker logs app_web_test
+        exit 1
+      fi
+
+    # Règle : ce job s'exécute sur les branches develop et main
+  rules:
+   - if: '$CI_COMMIT_BRANCH == "develop"'
+   - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ────────────────────────────────────────────────────────────────
+# 🚧 Déploiement préproduction
+deploy_preprod:
+  stage: deploy_preprod
+  environment:
+    name: preprod
+  script:
+    - echo "→ Déploiement sur la préproduction"
+
+    # Connexion au GitLab Container Registry
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    # Pull de l’image application si nécessaire (le fichier compose va le faire aussi)
+    - docker pull $CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID
+
+    # Définir le nom d'image utilisé dans le compose
+    - export APP_IMAGE="$CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID"
+    # Définir le nom de l'app pour l'environnement de test
+    - export APP_NAME="app_web_preprod"
+    # Définir le port pour l'environnement de test
+    - export APP_PORT="8880"
+    # Définir le nom de la base redis pour l'environnement de test
+    - export REDIS_NAME="redis_preprod"
+    # Définir le port redis pour l'environnement de test
+    - export REDIS_PORT="63791"
+
+    # Arrêt des conteneurs existants pour l’environnement courant
+    - docker compose --project-name ${APP_ENV} -f docker-compose.yml down || true
+    
+    # Lancement de la stack isolée pour l’environnement courant
+    - docker compose --project-name ${APP_ENV} -f docker-compose.yml up -d
+
+    # Re-tag de l’image déployée en préprod → prod (versionning) + push vers le registre
+    - docker tag $CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID $CI_REGISTRY_IMAGE:prod
+    - docker tag $CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID $CI_REGISTRY_IMAGE:app-demo_cicd-prod-v0.$CI_PIPELINE_IID
+    - docker push $CI_REGISTRY_IMAGE:prod
+    - docker push $CI_REGISTRY_IMAGE:app-demo_cicd-prod-v0.$CI_PIPELINE_IID
+    
+  # Règle : ce job s'exécute sur les branches develop et main
+  rules:
+  - if: '$CI_COMMIT_BRANCH == "develop"'
+  - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ────────────────────────────────────────────────────────────────
+# 🚀 Déploiement production
+deploy_prod:
+  stage: deploy_prod
+  environment:
+    name: production
+  script:
+   - echo "→ Déploiement de l'image en production"
+
+   # Connexion au GitLab Container Registry
+   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+   # Pull de l’image application si nécessaire (le fichier compose va le faire aussi)
+   - docker pull $CI_REGISTRY_IMAGE:prod
+
+   # Définir le nom d'image utilisé dans le compose
+   - export APP_IMAGE="$CI_REGISTRY_IMAGE:app-demo_cicd-v0.$CI_PIPELINE_IID"
+   # Définir le nom de l'app pour l'environnement de test
+   - export APP_NAME="app_web_prod"
+   # Définir le port pour l'environnement de test
+   - export APP_PORT="8080"
+  # Définir le nom de la base redis pour l'environnement de test
+   - export REDIS_NAME="redis_prod"
+  # Définir le port redis pour l'environnement de test
+   - export REDIS_PORT="6379"
+  
+  # Arrêt des conteneurs existants pour l’environnement courant
+   - docker compose --project-name ${APP_ENV} -f docker-compose.yml down || true
+  # Lancement de la stack isolée pour l’environnement courant
+   - docker compose --project-name ${APP_ENV} -f docker-compose.yml up -d
+
+  # Règle : uniquement sur la branche main, avec un déclenchement manuel dans l'interface GitLab 
+  rules:
+  - if: '$CI_COMMIT_BRANCH == "main"'
+    when: manual
+    allow_failure: false
